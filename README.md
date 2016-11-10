@@ -11,10 +11,11 @@ DESCRIPTION
 This simulation creates:
   1 host 
   5 VMs
-  100 containers
+  10 containers
+  100 requests
 
-Each container runs one cloudlet (application)
-Each cloudlet will require a different bandwidth and have a different priority
+Each container has a priority and is assumed to run one application
+Each request will require a different bandwidth 
 
 Traffic be scheduled based off of priority.
 
