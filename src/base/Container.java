@@ -24,11 +24,11 @@ public class Container {
      */
     private VM vm;
     
-    //request
-    private Request request;
-    
     //priority
-    private static int priority;
+    private int priority;
+    
+    //List of requests
+    private ArrayList<Request> requests;
 
     /**
      * Creates a new Container object.
@@ -39,6 +39,7 @@ public class Container {
     public Container(int id, int priority) {
     	this.id = id;
     	this.priority = priority;
+    	this.requests = new ArrayList<Request>();
     }
 
 	public VM getVm() {
@@ -49,26 +50,27 @@ public class Container {
 		this.vm = vm;
 	}
 
-	public Request getRequest() {
-		return request;
+	public Request getRequest(int i) {
+		return requests.get(i);
+	}
+	
+	public Request getFirstRequest(){
+		return requests.remove(0);
 	}
 
-	public void setRequest(Request request) {
-		this.request = request;
+	public void addRequest(Request request) {
+		requests.add(request);
 	}
 
-	public static int getPriority() {
+	public int getPriority() {
 		return priority;
 	}
 
-	public static void setPriority(int priority) {
-		Container.priority = priority;
+	public void setPriority(int priority) {
+		this.priority = priority;
 	}
 
 	public int getId() {
 		return id;
 	}
-
-  
-
 }

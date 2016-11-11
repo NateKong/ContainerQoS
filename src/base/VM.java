@@ -16,7 +16,7 @@ import java.util.List;
 public class VM {
 
     /**The vm id. */
-    private static int id;
+    private int id;
 
     /**The List of Containers on this VM. */
     private static ArrayList<Container> containers;
@@ -24,7 +24,7 @@ public class VM {
     /**The host. */
     private Host host;
 
-    private static int bw;
+    private int bw;
     
     /**
      * Creates a new VM
@@ -40,12 +40,21 @@ public class VM {
     /**
      * gets the id of the VM
      */
-    public static int getId(){
+    public int getId(){
     	return id;
+    }
+    
+    public int getBW(){
+    	return bw;
     }
     
     public void setHost(Host host){
     	this.host = host;
+    }
+    
+    public void addContainer(Container con){
+    	System.out.println("Adding container " + con.getId() + " to VM "+ id );
+    	containers.add(con);
     }
     
 }

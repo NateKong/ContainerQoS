@@ -23,15 +23,7 @@ public class Request {
     /**
      * The request ID.
      */
-    private final int id;
-
-    /**
-     * The execution status of this Cloudlet.
-     * 0 = not started
-     * 1 = running
-     * 2 = completed
-     */
-    private int status;
+    private int id;
 
     /**
      * The time when the application for this request starts.
@@ -45,15 +37,13 @@ public class Request {
     
     //The bandwidth required
     private int bw;
-    
-    //The container that will run this request
-    private Container container;
+  
     
     //the id of the container
     private int containerId;
     
     //The time it will take to run this request
-    private static int time;
+    private int time;
     
      /**
      * Allocates a Request being made to a container
@@ -63,18 +53,9 @@ public class Request {
     	this.bw = bw;
     	this.time = time;
     	this.containerId = containerId;
-    	this.status = 0;
     	this.startTime = 0;
     	this.finishTime = 0;
     }
-
-	public int getStatus() {
-		return status;
-	}
-
-	public void setStatus(int status) {
-		this.status = status;
-	}
 
 	public int getId() {
 		return id;
@@ -96,8 +77,12 @@ public class Request {
     	System.out.println(id + "\t" + startTime + "\t" + finishTime);
     }
     
-    public static int getTime(){
+    public int getTime(){
     	return time;
+    }
+    
+    public int getContainerId(){
+    	return containerId;
     }
 
 }

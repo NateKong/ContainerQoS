@@ -17,7 +17,6 @@ public class Base {
 	private static Host host;
 	private static ArrayList<VM> VMs;
 	private static ArrayList<Container> containers;
-	private static ArrayList<Request> requests;
 
 	public static void main(String[] args) {
 		time = 0;
@@ -36,13 +35,13 @@ public class Base {
 		createVMs(numOfVMs, vmBW);
 		//create Containers
 		createContainers(numOfContainers);
-		//create request
-		createRequests(numOfRequests);
-		
-		/**Setup - Connection of Objects*/
+		//Setup - Connection of Objects
 		setup();
 		
-		//run
+		/**Simulate project*/
+		//create requests and adds them to containers
+		schedule(numOfRequests);
+		
 		
 		//print
 		
@@ -50,34 +49,73 @@ public class Base {
 		
 	}
 
-	public static void createVMs(int num, int bw){
+	private static void createVMs(int num, int bw){
 		VMs = new ArrayList<VM>();
-		System.out.println("\n********************");
+		printBreak();
 		for (int i = 1; i <= num; i++){
-			VM vm = new VM(i, bw);
-			VMs.add(vm);
-			System.out.println("VM " + vm.getId() + " created");
+			VMs.add(new VM(i, bw));
+		}
+		
+		for (VM m: VMs){
+			System.out.println("VM " + m.getId() + " created ");
 		}
 	}
 
 
 	private static void createContainers(int num) {
 		containers = new ArrayList<Container>();
-		System.out.println("\n********************");
+		printBreak();
 		
 		//random generated data
-		int[] priority = {3, 2, 3, 1, 2, 3, 3, 2, 2, 1, 3};
+		int[] priority = {0, 2, 3, 1, 2, 3, 3, 2, 3, 1, 3};
 		
 		for (int i = 1; i <= num; i++){
-			Container c = new Container(i, priority[i]);
-			containers.add( c );
+			containers.add( new Container(i, priority[i]) );
+		}
+		
+		for (Container c: containers){
 			System.out.println("Container " + c.getId() + " has a priority of " + c.getPriority() );
 		}
 	}
 
-	private static void createRequests(int num) {
-		requests = new ArrayList<Request>();
+	private static void setup() {
+		//VMs look to attach to hosts
+		printBreak();
+		for (VM vm: VMs){
+			vm.setHost(host);
+			host.addVm(vm);
+		}
+		
+		//containers look to attach to VMs
+		printBreak();
+		int v = 0;
+		int numOfVms = VMs.size();
+		for (Container con: containers){
+			if (v == numOfVms){ v = 0;}
+			VM vm = VMs.get(v++);
+			//System.out.println(vm.getId());
+			vm.addContainer(con);
+			con.setVm(vm);
+		}
+		
+	}
+	
+	public static void printBreak(){
 		System.out.println("\n********************");
+	}
+	
+	private static void schedule(int numOfRequests){
+		//create request
+		ArrayList<Request> requests = createRequests(numOfRequests);
+
+		for (Request r: requests){
+			containers.get( r.getContainerId()-1 ).addRequest(r);
+		}	
+	}
+	
+	private static ArrayList<Request> createRequests(int num) {
+		ArrayList<Request> requests = new ArrayList<Request>();
+		printBreak();
 		
 		//random generated data
 		int[] bw = {1343, 2426, 2207, 947, 2201, 1222, 1085, 1547, 1098,
@@ -106,15 +144,12 @@ public class Base {
 
 		//create container
 		for (int i = 1; i <= num; i++){
-			Request r = new Request(i, bw[i], requestTime[i], containerID[i]);
-			requests.add( r );
+			requests.add( new Request(i, bw[i], requestTime[i], containerID[i]) );
+		}
+		for (Request r: requests){
 			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds");
-		}		
-	}
-	
-	private static void setup() {
-		// TODO Auto-generated method stub
-		
+		}
+		return requests;
 	}
 	
 }
