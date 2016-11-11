@@ -1,8 +1,7 @@
 package enhancement;
 
 import java.util.ArrayList;
-
-import base.Request;
+import base.*;
 
 /**************************************
  * Simulation of a containers running cloudlets
@@ -15,14 +14,109 @@ import base.Request;
  **************************************/
 
 public class enhancement {
+	private static int time;
+	private static Host host;
+	private static ArrayList<VM> VMs;
+	private static ArrayList<Container> containers;
+	private static ArrayList<Request> completedRequests;
+
 	public static void main(String[] args) {
-	
-	
+		time = 0;
+		int numOfHosts = 1;
+		int hostBW = 1000000; //Rounded number from CloudSim
+		int numOfVMs = 5;
+		int vmBW = 100000; //Rounded number from CloudSim
+		int numOfContainers = 10;
+		int numOfRequests = 100;
+		
+		/**initialize architecture*/
+		//create host
+		host = new Host(numOfHosts, hostBW);
+		System.out.println("Host " + Host.getId() + " created");
+		//create VMs
+		createVMs(numOfVMs, vmBW);
+		//create Containers
+		createContainers(numOfContainers);
+		//Setup - Connection of Objects
+		setup();
+		
+		/**Simulate project*/
+		//create requests and adds them to containers
+		schedule(numOfRequests);
+		
+		//run simulation
+		run(numOfRequests);
+		
+		//print
+		printOutput();
+		System.out.println("\n*****  Simulation Complete  *****");
 	}
 
-/*****************************************************************************
-	private static void createRequests(int num) {
-		requests = new ArrayList<Request>();
+	private static void createVMs(int num, int bw){
+		VMs = new ArrayList<VM>();
+		printBreak();
+		for (int i = 1; i <= num; i++){
+			VMs.add(new VM(i, bw));
+		}
+		
+		for (VM m: VMs){
+			System.out.println("VM " + m.getId() + " created ");
+		}
+	}
+
+	private static void createContainers(int num) {
+		containers = new ArrayList<Container>();
+		printBreak();
+		
+		//random generated data
+		int[] priority = {0, 2, 3, 1, 2, 3, 3, 2, 3, 1, 3};
+		
+		for (int i = 1; i <= num; i++){
+			containers.add( new Container(i, priority[i]) );
+		}
+		
+		for (Container c: containers){
+			System.out.println("Container " + c.getId() + " has a priority of " + c.getPriority() );
+		}
+	}
+
+	private static void setup() {
+		//VMs look to attach to hosts
+		printBreak();
+		for (VM vm: VMs){
+			vm.setHost(host);
+			host.addVm(vm);
+		}
+		
+		//containers look to attach to VMs
+		printBreak();
+		int v = 0;
+		int numOfVms = VMs.size();
+		for (Container con: containers){
+			if (v == numOfVms){ v = 0;}
+			VM vm = VMs.get(v++);
+			//System.out.println(vm.getId());
+			vm.addContainer(con);
+			con.setVm(vm);
+		}
+		
+	}
+	
+	public static void printBreak(){
+		System.out.println("\n********************");
+	}
+	
+	private static void schedule(int numOfRequests){
+		//create request
+		ArrayList<Request>requests = createRequests(numOfRequests);
+
+		for (Request r: requests){
+			containers.get( r.getContainerId()-1 ).addRequest(r);
+		}	
+	}
+	
+	private static ArrayList<Request> createRequests(int num) {
+		ArrayList<Request> requests = new ArrayList<Request>();
 		printBreak();
 		
 		//random generated data
@@ -55,8 +149,97 @@ public class enhancement {
 			requests.add( new Request(i, bw[i], requestTime[i], containerID[i]) );
 		}
 		for (Request r: requests){
-			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds");
+			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds on container " + r.getContainerId() );
+		}
+		return requests;
+	}
+	
+	private static void run(int numOfRequests){
+		printBreak();
+		completedRequests = new ArrayList<Request>();
+		ArrayList<Container> p1 = new ArrayList<Container>();
+		ArrayList<Container> p2 = new ArrayList<Container>();
+		ArrayList<Container> p3 = new ArrayList<Container>();
+		
+		for (Container c: containers){
+			int i = c.getPriority();
+			if (i == 1){
+				p1.add(c);
+			}else if (i == 2){
+				p2.add(c);
+			}else {
+				p3.add(c);
+			}
+		}
+		
+		boolean run = true;
+		do {
+			//run request from containers: highest priority first
+			runContainers(p1);
+			runContainers(p2);
+			runContainers(p3);
+			
+			run = checkRequests(numOfRequests);
+			
+			increment();
+			
+		}while(run);
+	}
+	
+	private static void runContainers(ArrayList<Container> con){
+		for (Container c: con){
+			if (c.getRequestSize() > 0){
+				VM vm = c.getVm();
+				Request r = c.getRequest(0);
+				
+				if (vm.getBW() >= r.getBw()){
+					//subtract time from VM bandwidth
+					vm.subBW(r.getBw());
+					//if the request has not been started
+					if(r.getStatus() == false){
+						r.setStartTime(time);
+						r.turnOn();
+					}
+					
+					if(r.getTime() == 0){
+						r.setFinishTime(time);
+						completedRequests.add( c.RemoveFirstRequest() );
+					}else{
+						r.subTime(1);	
+					}
+				}			
+			}
 		}
 	}
-****************************************************************************/	
+	
+	//checks to make sure all 100 requests have been completed
+	private static boolean checkRequests(int numOfRequests){
+		int size = completedRequests.size();
+		if(size == numOfRequests){
+			return false;
+		}
+		/*else{
+			System.out.println(size);
+		}
+		*/
+		return true;
+	}
+		
+	private static void increment(){
+		//increment global time
+		time++;
+		//reset the bandwidth for each VM
+		for (VM vm: VMs){
+			vm.resetBW();
+		}
+	}
+	
+	private static void printOutput(){
+		System.out.println("Request ID\tContainer ID\tStart Time\tFinish Time\tBandwidth");
+		for (Request r: completedRequests){
+			r.printResults();
+		}
+	}
+	
+	
 }
