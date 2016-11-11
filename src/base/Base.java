@@ -1,7 +1,6 @@
 package base;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**************************************
  * Simulation of a containers running cloudlets
@@ -17,13 +16,14 @@ public class Base {
 	private static Host host;
 	private static ArrayList<VM> VMs;
 	private static ArrayList<Container> containers;
+	private static ArrayList<Request> completedRequests;
 
 	public static void main(String[] args) {
 		time = 0;
 		int numOfHosts = 1;
-		int hostBW = 10000; //Rounded number from CloudSim
+		int hostBW = 1000000; //Rounded number from CloudSim
 		int numOfVMs = 5;
-		int vmBW = 1000; //Rounded number from CloudSim
+		int vmBW = 100000; //Rounded number from CloudSim
 		int numOfContainers = 10;
 		int numOfRequests = 100;
 		
@@ -42,11 +42,12 @@ public class Base {
 		//create requests and adds them to containers
 		schedule(numOfRequests);
 		
+		//run simulation
+		run(numOfRequests);
 		
 		//print
-		
-		//close everything out
-		
+		printOutput();
+		System.out.println("\n*****  Simulation Complete  *****");
 	}
 
 	private static void createVMs(int num, int bw){
@@ -60,7 +61,6 @@ public class Base {
 			System.out.println("VM " + m.getId() + " created ");
 		}
 	}
-
 
 	private static void createContainers(int num) {
 		containers = new ArrayList<Container>();
@@ -106,7 +106,7 @@ public class Base {
 	
 	private static void schedule(int numOfRequests){
 		//create request
-		ArrayList<Request> requests = createRequests(numOfRequests);
+		ArrayList<Request>requests = createRequests(numOfRequests);
 
 		for (Request r: requests){
 			containers.get( r.getContainerId()-1 ).addRequest(r);
@@ -147,9 +147,95 @@ public class Base {
 			requests.add( new Request(i, bw[i], requestTime[i], containerID[i]) );
 		}
 		for (Request r: requests){
-			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds");
+			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds on container " + r.getContainerId() );
 		}
 		return requests;
 	}
 	
+	private static void run(int numOfRequests){
+		printBreak();
+		completedRequests = new ArrayList<Request>();
+		ArrayList<Container> p1 = new ArrayList<Container>();
+		ArrayList<Container> p2 = new ArrayList<Container>();
+		ArrayList<Container> p3 = new ArrayList<Container>();
+		
+		for (Container c: containers){
+			int i = c.getPriority();
+			if (i == 1){
+				p1.add(c);
+			}else if (i == 2){
+				p2.add(c);
+			}else {
+				p3.add(c);
+			}
+		}
+		
+		boolean run = true;
+		do {
+			//run request from containers: highest priority first
+			runContainers(p1);
+			runContainers(p2);
+			runContainers(p3);
+			
+			run = checkRequests(numOfRequests);
+			
+			increment();
+			
+		}while(run);
+	}
+	
+	private static void runContainers(ArrayList<Container> con){
+		for (Container c: con){
+			if (c.getRequestSize() > 0){
+				VM vm = c.getVm();
+				Request r = c.getRequest(0);
+				
+				if (vm.getBW() >= r.getBw()){
+					//subtract time from VM bandwidth
+					vm.subBW(r.getBw());
+					//if the request has not been started
+					if(r.getStatus() == false){
+						r.setStartTime(time);
+						r.turnOn();
+					}
+					
+					if(r.getTime() == 0){
+						r.setFinishTime(time);
+						completedRequests.add( c.RemoveFirstRequest() );
+					}else{
+						r.subTime(1);	
+					}
+				}			
+			}
+		}
+	}
+	
+	//checks to make sure all 100 requests have been completed
+	private static boolean checkRequests(int numOfRequests){
+		int size = completedRequests.size();
+		if(size == numOfRequests){
+			return false;
+		}
+		/*else{
+			System.out.println(size);
+		}
+		*/
+		return true;
+	}
+	
+	private static void increment(){
+		//increment global time
+		time++;
+		//reset the bandwidth for each VM
+		for (VM vm: VMs){
+			vm.resetBW();
+		}
+	}
+	
+	private static void printOutput(){
+		System.out.println("Request ID\tContainer ID\tStart Time\tFinish Time\tBandwidth");
+		for (Request r: completedRequests){
+			r.printResults();
+		}
+	}
 }
