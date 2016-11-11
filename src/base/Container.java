@@ -50,11 +50,15 @@ public class Container {
 		this.vm = vm;
 	}
 
+	public int getRequestSize(){
+		return requests.size();
+	}
+	
 	public Request getRequest(int i) {
 		return requests.get(i);
 	}
 	
-	public Request getFirstRequest(){
+	public Request RemoveFirstRequest(){
 		return requests.remove(0);
 	}
 

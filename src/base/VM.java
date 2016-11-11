@@ -26,6 +26,8 @@ public class VM {
 
     private int bw;
     
+    private static int resetBW;
+    
     /**
      * Creates a new VM
      * @param id
@@ -34,6 +36,7 @@ public class VM {
     public VM( int id, int bw ) {
     	this.id = id;
     	this.bw = bw;
+    	this.resetBW = bw;
     	this.containers = new ArrayList<Container>();
     }
 
@@ -42,6 +45,14 @@ public class VM {
      */
     public int getId(){
     	return id;
+    }
+    
+    public void subBW(int band){
+    	bw -= band;
+    }
+    
+    public void addBW(int band){
+    	bw += band;
     }
     
     public int getBW(){
@@ -55,6 +66,10 @@ public class VM {
     public void addContainer(Container con){
     	System.out.println("Adding container " + con.getId() + " to VM "+ id );
     	containers.add(con);
+    }
+    
+    public void resetBW(){
+    	bw = resetBW;
     }
     
 }

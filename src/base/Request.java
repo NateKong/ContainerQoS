@@ -35,10 +35,12 @@ public class Request {
      */
     private long finishTime;
     
+    //status of the request true=started false=not started
+    private boolean started;
+    
     //The bandwidth required
     private int bw;
   
-    
     //the id of the container
     private int containerId;
     
@@ -55,6 +57,7 @@ public class Request {
     	this.containerId = containerId;
     	this.startTime = 0;
     	this.finishTime = 0;
+    	this.started = false;
     }
 
 	public int getId() {
@@ -74,15 +77,26 @@ public class Request {
 	}
     
     public void printResults(){
-    	System.out.println(id + "\t" + startTime + "\t" + finishTime);
+    	System.out.println( id + "\t\t" + containerId + "\t\t" + startTime + "\t\t" + finishTime + "\t\t" + bw);
     }
     
     public int getTime(){
     	return time;
     }
     
+    public void subTime(int t){
+    	time -= t;
+    }
+    
     public int getContainerId(){
     	return containerId;
     }
-
+    
+    public boolean getStatus(){
+    	return started;
+    }
+    
+    public void turnOn(){
+    	started = true;
+    }
 }
