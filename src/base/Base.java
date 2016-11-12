@@ -22,8 +22,8 @@ public class Base {
 		time = 0;
 		int numOfHosts = 1;
 		int hostBW = 1000000; //Rounded number from CloudSim
-		int numOfVMs = 5;
-		int vmBW = 100000; //Rounded number from CloudSim
+		int numOfVMs = 1;
+		int vmBW = 10000; //Rounded number from CloudSim
 		int numOfContainers = 10;
 		int numOfRequests = 100;
 		
