@@ -5,12 +5,16 @@ STUDENT PROJECT
 JAVA
 
 OBJECTIVE
-Create priorities for containers in a cloud environment and dynamically adjust bandwidth for containers.
+
+Create priorities for containers in a cloud environment.
+Ensure prioritized containers run first
+
 
 DESCRIPTION
+
 This simulation creates:
   1 host 
-  5 VMs
+  1 VM
   10 containers
   100 requests
 
@@ -19,3 +23,5 @@ Each request will require a different bandwidth
 
 Traffic be scheduled based off of priority.
 
+Base.java -> containers run requests using highest priority first
+Enhancement.java -> containers run requests using highest priority first and Round Robin 
