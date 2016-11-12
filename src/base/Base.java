@@ -194,9 +194,9 @@ public class Base {
 					//subtract time from VM bandwidth
 					vm.subBW(r.getBw());
 					//if the request has not been started
-					if(r.getStatus() == false){
+					if(r.getStatus() == Status.waiting){
 						r.setStartTime(time);
-						r.turnOn();
+						r.setStatus(Status.running);
 					}
 					
 					if(r.getTime() == 0){

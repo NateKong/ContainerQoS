@@ -35,9 +35,6 @@ public class Request {
      */
     private long finishTime;
     
-    //status of the request true=started false=not started
-    private boolean started;
-    
     //The bandwidth required
     private int bw;
   
@@ -47,6 +44,11 @@ public class Request {
     //The time it will take to run this request
     private int time;
     
+    //status of the Request
+    private Status s;
+    
+    //time before it is labeled as starvation
+    private int starveTime;
      /**
      * Allocates a Request being made to a container
      */
@@ -57,7 +59,8 @@ public class Request {
     	this.containerId = containerId;
     	this.startTime = 0;
     	this.finishTime = 0;
-    	this.started = false;
+    	this.s = Status.waiting;
+    	this.starveTime = 1;
     }
 
 	public int getId() {
@@ -77,7 +80,7 @@ public class Request {
 	}
     
     public void printResults(){
-    	System.out.println( id + "\t\t" + containerId + "\t\t" + startTime + "\t\t" + finishTime + "\t\t" + bw);
+    	System.out.println( id);// + "\t\t" + containerId + "\t\t" + startTime + "\t\t" + finishTime + "\t\t" + bw);
     }
     
     public int getTime(){
@@ -92,11 +95,19 @@ public class Request {
     	return containerId;
     }
     
-    public boolean getStatus(){
-    	return started;
-    }
-    
-    public void turnOn(){
-    	started = true;
-    }
+	public Status getStatus(){
+		return s;
+	}
+	
+	public void setStatus(Status status){
+		s = status;
+	}
+	
+	public void starve(){
+		starveTime -= 1;
+	}
+	
+	public int starveTime(){
+		return starveTime;
+	}
 }
