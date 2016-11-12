@@ -198,9 +198,10 @@ public class Base {
 						r.setStatus(Status.running);
 					}
 					
-					if(r.getTime() == 0){
+					if(r.getTime() == 0 && r.getStatus() != Status.completed){
 						r.setFinishTime(time);
 						completedRequests.add( c.RemoveFirstRequest() );
+						r.setStatus(Status.completed);
 					}else{
 						r.subTime(1);	
 					}
