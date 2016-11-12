@@ -182,11 +182,11 @@ public class enhancement {
 			break;
 			case 1:	rr(p1,p2,p3);
 			break;
-			case 2:	rr(p2,p1,p3);
+			case 2:	rr(p2,p3,p1);
 			break;
 			case 3:	rr(p1,p2,p3);
 			break;
-			case 4:	rr(p2,p1,p3);
+			case 4:	rr(p2,p3,p1);
 			break;
 			default:rr(p3,p1,p2);
 			}
@@ -219,9 +219,10 @@ public class enhancement {
 						r.setStatus(Status.running);
 					}
 					
-					if(r.getTime() == 0){
+					if(r.getTime() == 0 && r.getStatus() != Status.completed){
 						r.setFinishTime(time);
 						completedRequests.add( c.RemoveFirstRequest() );
+						r.setStatus(Status.completed);
 					}else{
 						r.subTime(1);	
 					}
@@ -231,7 +232,7 @@ public class enhancement {
 	}
 	
 	
-	//checks to make sure all 100 requests have been completed
+	//checks to make sure all requests have been completed
 	private static boolean checkRequests(int numOfRequests){
 		int size = completedRequests.size();
 		if(size == numOfRequests){
