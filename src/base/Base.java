@@ -23,9 +23,9 @@ public class Base {
 		int numOfHosts = 1;
 		int hostBW = 1000000; //Rounded number from CloudSim
 		int numOfVMs = 1;
-		int vmBW = 10000; //Rounded number from CloudSim
-		int numOfContainers = 10;
-		int numOfRequests = 100;
+		int vmBW = 3000; //Rounded number from CloudSim
+		int numOfContainers = 3;
+		int numOfRequests = 75;
 		
 		/**initialize architecture*/
 		//create host
@@ -66,8 +66,8 @@ public class Base {
 		containers = new ArrayList<Container>();
 		printBreak();
 		
-		//random generated data
-		int[] priority = {0, 2, 3, 1, 2, 3, 3, 2, 3, 1, 3};
+		//the first one won't count
+		int[] priority = {0, 1, 2, 3, 3 };
 		
 		for (int i = 1; i <= num; i++){
 			containers.add( new Container(i, priority[i]) );
@@ -128,23 +128,22 @@ public class Base {
 				1020, 2108, 1524, 2229, 1462, 2301, 2240, 2206, 1098, 1470,
 				1837, 930, 2031, 2210, 1738, 1096, 920, 1666, 2194, 1208, 869,
 				1138, 1024, 2401, 1052, 700, 2405, 1864, 501, 1906, 686, 1513};
-		int[] requestTime = {29, 10, 57, 34, 30, 23, 12, 33, 56, 60, 43, 32,
+		/*int[] requestTime = {29, 10, 57, 34, 30, 23, 12, 33, 56, 60, 43, 32,
 				27, 30, 11, 57, 20, 16, 30, 47, 49, 9, 48, 54, 38, 23, 56,
 				52, 4, 23, 37, 35, 32, 39, 20, 2, 46, 19, 31, 32, 39, 57, 51,
 				12, 11, 23, 30, 8, 3, 37, 49, 17, 32, 24, 54, 46, 7, 9, 23,
 				28, 20, 29, 59, 19, 7, 50, 2, 22, 52, 42, 2, 53, 34, 38, 25,
 				10, 54, 42, 40, 45, 27, 56, 1, 51, 40, 22, 41, 50, 37, 48, 59,
 				11, 36, 11, 19, 42, 49, 53, 51, 50, 39};
-		int[] containerID = {2, 9, 10, 6, 8, 3, 5, 1, 10, 4, 8, 10, 8, 8,
-				10, 5, 8, 4, 9, 8, 5, 5, 10, 3, 3, 1, 3, 6, 7, 3, 4, 2,
-				2, 9, 3, 7, 2, 3, 3, 5, 2, 10, 4, 7, 8, 5, 10, 7, 6, 5,
-				1, 7, 4, 2, 9, 5, 3, 2, 2, 8, 3, 3, 5, 7, 5, 6, 4, 1, 8,
-				6, 2, 9, 4, 2, 8, 6, 10, 3, 7, 2, 3, 1, 8, 7, 4, 7, 10,
-				2, 3, 10, 9, 6, 10, 4, 7, 2, 6, 5, 10, 4, 6};
+				*/
+		int[] containerID = {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+				2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+				3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+				4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4};
 
 		//create container
 		for (int i = 1; i <= num; i++){
-			requests.add( new Request(i, bw[i], requestTime[i], containerID[i]) );
+			requests.add( new Request(i, bw[i], 5, containerID[i]) );
 		}
 		for (Request r: requests){
 			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds on container " + r.getContainerId() );
