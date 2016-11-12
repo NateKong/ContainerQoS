@@ -22,14 +22,13 @@ public class enhancement {
 	private static ArrayList<VM> VMs;
 	private static ArrayList<Container> containers;
 	private static ArrayList<Request> completedRequests;
-	private static ArrayList<Request> starvedRequests;
 
 	public static void main(String[] args) {
 		time = 0;
 		int numOfHosts = 1;
 		int hostBW = 1000000; //Rounded number from CloudSim
-		int numOfVMs = 5;
-		int vmBW = 100000; //Rounded number from CloudSim
+		int numOfVMs = 1;
+		int vmBW = 10000; //Rounded number from CloudSim
 		int numOfContainers = 10;
 		int numOfRequests = 100;
 		
@@ -49,12 +48,11 @@ public class enhancement {
 		schedule(numOfRequests);
 		
 		//run simulation
-		starvedRequests = new ArrayList<Request>();
 		run(numOfRequests);
 		
 		//print
 		printOutput();
-		System.out.println("\n*****  Simulation Complete  *****");
+		System.out.println("\n***** Enhancement Simulation Complete  *****");
 	}
 
 	private static void createVMs(int num, int bw){
@@ -178,15 +176,22 @@ public class enhancement {
 		}
 		
 		boolean run = true;
+		int cnt = 0;
 		do {
-			//find starved containers
-			runStarved();
-			
-			//run request from containers: highest priority first
-			runContainers(p1);
-			runContainers(p2);
-			runContainers(p3);
-			
+			switch (cnt++ % 6) {
+			case 0:	rr(p1,p2,p3);
+			break;
+			case 1:	rr(p1,p2,p3);
+			break;
+			case 2:	rr(p2,p1,p3);
+			break;
+			case 3:	rr(p1,p2,p3);
+			break;
+			case 4:	rr(p2,p1,p3);
+			break;
+			default:rr(p3,p1,p2);
+			}
+
 			run = checkRequests(numOfRequests);
 			
 			increment();
@@ -194,99 +199,38 @@ public class enhancement {
 		}while(run);
 	}
 	
-	private static void runStarved(){
-		if (!starvedRequests.isEmpty()){
-			//run starved requests
-			for (Request r: starvedRequests){
-				Container c = containers.get(r.getContainerId());
-				VM vm = c.getVm();
-				//request gets ran
-				if (vm.getBW() >= r.getBw()){
-					//subtract time from VM bandwidth
-					vm.subBW(r.getBw());
-					//if the request has not been started start request
-					if(r.getStatus() == Status.starved){
-						r.setStartTime(time);
-						r.setStatus(Status.running);
-					}
-					
-					//if request has been completed
-					if(r.getTime() == 0){
-						r.setFinishTime(time);
-						completedRequests.add( c.RemoveFirstRequest() );	
-					}
-			
-				}
-			}
-			
-		}
+	private static void rr(ArrayList<Container> a, ArrayList<Container> b, ArrayList<Container> c){
+		runContainers(a);
+		runContainers(b);
+		runContainers(c);
 	}
-	
 	
 	private static void runContainers(ArrayList<Container> con){
 		for (Container c: con){
-			//if the container has requests
 			if (c.getRequestSize() > 0){
 				VM vm = c.getVm();
 				Request r = c.getRequest(0);
 				
-				//request gets ran
 				if (vm.getBW() >= r.getBw()){
 					//subtract time from VM bandwidth
 					vm.subBW(r.getBw());
-					//if the request has not been started start request
+					//if the request has not been started
 					if(r.getStatus() == Status.waiting){
 						r.setStartTime(time);
 						r.setStatus(Status.running);
 					}
 					
-					//if request has been completed
 					if(r.getTime() == 0){
 						r.setFinishTime(time);
 						completedRequests.add( c.RemoveFirstRequest() );
-						searchStarved();
-						
 					}else{
 						r.subTime(1);	
 					}
-				
-				//request is not ran
-				}else{
-					if(r.starveTime() == 0){
-						r.setStatus(Status.starved);
-						r.starve();
-					}
-					
-					r.starve();
 				}			
 			}
 		}
 	}
 	
-	//searches for starved requests and add them to a list to get completed first
-	private static void searchStarved(){
-		ArrayList<Request> starved = new ArrayList<Request>();
-		//get starved requests
-		for (Container c: containers){
-			if (c.getPriority() != 1 && c.getRequestSize() > 0){
-				if(c.getRequest(0).getStatus().equals(Status.starved)){
-					starved.add(c.RemoveFirstRequest());
-				}
-			}
-		}
-		
-		//sort list by most starved
-		Collections.sort(starved, new Comparator<Request>() {
-			@Override
-			public int compare(Request r1, Request r2) {
-				return r1.starveTime() - r2.starveTime();
-			}	
-		});
-		// add starved requests to list
-		for (Request r: starved){ 
-			starvedRequests.add(r);
-		}
-	}
 	
 	//checks to make sure all 100 requests have been completed
 	private static boolean checkRequests(int numOfRequests){
