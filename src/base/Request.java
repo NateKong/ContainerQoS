@@ -60,7 +60,7 @@ public class Request {
     	this.startTime = 0;
     	this.finishTime = 0;
     	this.s = Status.waiting;
-    	this.starveTime = 1;
+    	this.starveTime = 30;
     }
 
 	public int getId() {
@@ -80,7 +80,7 @@ public class Request {
 	}
     
     public void printResults(){
-    	System.out.println( id);// + "\t\t" + containerId + "\t\t" + startTime + "\t\t" + finishTime + "\t\t" + bw);
+    	System.out.println( id + "\t\t" + containerId + "\t\t" + startTime + "\t\t" + finishTime + "\t\t" + bw);
     }
     
     public int getTime(){
