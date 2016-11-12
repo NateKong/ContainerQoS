@@ -1,6 +1,9 @@
 package enhancement;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import base.*;
 
 /**************************************
@@ -19,6 +22,7 @@ public class enhancement {
 	private static ArrayList<VM> VMs;
 	private static ArrayList<Container> containers;
 	private static ArrayList<Request> completedRequests;
+	private static ArrayList<Request> starvedRequests;
 
 	public static void main(String[] args) {
 		time = 0;
@@ -45,6 +49,7 @@ public class enhancement {
 		schedule(numOfRequests);
 		
 		//run simulation
+		starvedRequests = new ArrayList<Request>();
 		run(numOfRequests);
 		
 		//print
@@ -174,6 +179,9 @@ public class enhancement {
 		
 		boolean run = true;
 		do {
+			//find starved containers
+			runStarved();
+			
 			//run request from containers: highest priority first
 			runContainers(p1);
 			runContainers(p2);
@@ -186,29 +194,97 @@ public class enhancement {
 		}while(run);
 	}
 	
+	private static void runStarved(){
+		if (!starvedRequests.isEmpty()){
+			//run starved requests
+			for (Request r: starvedRequests){
+				Container c = containers.get(r.getContainerId());
+				VM vm = c.getVm();
+				//request gets ran
+				if (vm.getBW() >= r.getBw()){
+					//subtract time from VM bandwidth
+					vm.subBW(r.getBw());
+					//if the request has not been started start request
+					if(r.getStatus() == Status.starved){
+						r.setStartTime(time);
+						r.setStatus(Status.running);
+					}
+					
+					//if request has been completed
+					if(r.getTime() == 0){
+						r.setFinishTime(time);
+						completedRequests.add( c.RemoveFirstRequest() );	
+					}
+			
+				}
+			}
+			
+		}
+	}
+	
+	
 	private static void runContainers(ArrayList<Container> con){
 		for (Container c: con){
+			//if the container has requests
 			if (c.getRequestSize() > 0){
 				VM vm = c.getVm();
 				Request r = c.getRequest(0);
 				
+				//request gets ran
 				if (vm.getBW() >= r.getBw()){
 					//subtract time from VM bandwidth
 					vm.subBW(r.getBw());
-					//if the request has not been started
-					if(r.getStatus() == false){
+					//if the request has not been started start request
+					if(r.getStatus() == Status.waiting){
 						r.setStartTime(time);
-						r.turnOn();
+						r.setStatus(Status.running);
 					}
 					
+					//if request has been completed
 					if(r.getTime() == 0){
 						r.setFinishTime(time);
 						completedRequests.add( c.RemoveFirstRequest() );
+						searchStarved();
+						
 					}else{
 						r.subTime(1);	
 					}
+				
+				//request is not ran
+				}else{
+					if(r.starveTime() == 0){
+						r.setStatus(Status.starved);
+						r.starve();
+					}
+					
+					r.starve();
 				}			
 			}
+		}
+	}
+	
+	//searches for starved requests and add them to a list to get completed first
+	private static void searchStarved(){
+		ArrayList<Request> starved = new ArrayList<Request>();
+		//get starved requests
+		for (Container c: containers){
+			if (c.getPriority() != 1 && c.getRequestSize() > 0){
+				if(c.getRequest(0).getStatus().equals(Status.starved)){
+					starved.add(c.RemoveFirstRequest());
+				}
+			}
+		}
+		
+		//sort list by most starved
+		Collections.sort(starved, new Comparator<Request>() {
+			@Override
+			public int compare(Request r1, Request r2) {
+				return r1.starveTime() - r2.starveTime();
+			}	
+		});
+		// add starved requests to list
+		for (Request r: starved){ 
+			starvedRequests.add(r);
 		}
 	}
 	
