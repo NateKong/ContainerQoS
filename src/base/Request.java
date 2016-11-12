@@ -28,12 +28,12 @@ public class Request {
     /**
      * The time when the application for this request starts.
      */
-    private long startTime;
+    private int startTime;
 
     /**
      * The time when the application for this request completes.
      */
-    private long finishTime;
+    private int finishTime;
     
     //The bandwidth required
     private int bw;
@@ -71,12 +71,16 @@ public class Request {
 		return bw;
 	}
 
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
+	public void setStartTime(int time) {
+		startTime = time;
 	}
 
-	public void setFinishTime(long finishTime) {
-		this.finishTime = finishTime;
+	public void setFinishTime(int time) {
+		finishTime = time;
+	}
+	
+	public int getFinishTime() {
+		return finishTime;
 	}
     
     public void printResults(){
