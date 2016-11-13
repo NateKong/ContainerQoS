@@ -19,7 +19,7 @@ public class Base {
 	private static ArrayList<Request> completedRequests;
 
 	public static void main(String[] args) {
-		time = 0;
+		time = 1;
 		int numOfHosts = 1;
 		int hostBW = 1000000; //Rounded number from CloudSim
 		int numOfVMs = 1;
@@ -143,7 +143,7 @@ public class Base {
 
 		//create container
 		for (int i = 1; i <= num; i++){
-			requests.add( new Request(i, bw[i], 5, containerID[i]) );
+			requests.add( new Request(i, bw[i], 4, containerID[i]) );
 		}
 		for (Request r: requests){
 			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds on container " + r.getContainerId() );
