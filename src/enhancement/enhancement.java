@@ -220,30 +220,60 @@ public class enhancement {
 	}
 	
 	private static void runContainers(ArrayList<Request> req){
-		VM vm = VMs.get(0);
+		
+		Boolean c1 = true;
+		Boolean c2 = true;
+		Boolean c3 = true;
+		//System.out.println(completedRequests.size());
+		int con = 0;
+		
+		int cnt = 0;
 		for (Request r: req){
-			if (vm.getBW() >= r.getBw() && r.getStatus() != Status.completed){
-				//subtract time from VM bandwidth
-				vm.subBW(r.getBw());
-				//if the request has not been started
-				if(r.getStatus() == Status.waiting){
-					r.setStartTime(time);
-					r.setStatus(Status.running);
-				}
-				
-				if(r.getTime() == 0 && r.getStatus() != Status.completed){
-					r.setFinishTime(time);
-					completedRequests.add( r );
-					//req.remove(r);
-					r.setStatus(Status.completed);
-				}else{
-					r.subTime(1);	
-				}
-			}			
+			System.out.println(cnt++);
+			if (r.getContainerId() == 1 && c1 && r.getStatus() != Status.completed){
+				con = processRequest(r);
+			}else if (r.getContainerId() == 2 && c2 && r.getStatus() != Status.completed){
+				con = processRequest(r);
+			}else if (r.getContainerId() == 3 && c3 && r.getStatus() != Status.completed){
+				con = processRequest(r);
+			}
+			
+			if(con == 1){c1=false;}
+			if(con == 2){c2=false;}
+			if(con == 3){c3=false;}
+			
+			if(!c1 && !c2 && !c3){
+				break;
+			}
 			
 		}
-	}
+	}	
 	
+	private static int processRequest(Request r){	
+		VM vm = VMs.get(0);
+	
+	
+		if (vm.getBW() >= r.getBw() && r.getStatus() != Status.completed){
+			//subtract time from VM bandwidth
+			vm.subBW(r.getBw());
+
+			//if the request has not been started
+			if(r.getStatus() == Status.waiting){
+				r.setStartTime(time);
+				r.setStatus(Status.running);
+			}
+			
+			if(r.getTime() == 0 && r.getStatus() != Status.completed){
+				r.setFinishTime(time);
+				completedRequests.add( r );
+				//req.remove(r);
+				r.setStatus(Status.completed);
+			}else{
+				r.subTime(1);	
+			}
+		}
+		return r.getContainerId();
+	}
 	
 	//checks to make sure all requests have been completed
 	private static boolean checkRequests(int numOfRequests){
