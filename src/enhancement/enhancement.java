@@ -24,7 +24,7 @@ public class enhancement {
 	private static ArrayList<Request> completedRequests;
 
 	public static void main(String[] args) {
-		time = 0;
+		time = 1;
 		int numOfHosts = 1;
 		int hostBW = 1000000; //Rounded number from CloudSim
 		int numOfVMs = 1;
@@ -148,7 +148,7 @@ public class enhancement {
 
 		//create container
 		for (int i = 1; i <= num; i++){
-			requests.add( new Request(i, bw[i], 5, containerID[i]) );
+			requests.add( new Request(i, bw[i], 4, containerID[i]) );
 		}
 		for (Request r: requests){
 			System.out.println("Requests: " + r.getId() + " requires " + r.getBw() + " bw and will take " + r.getTime() + " seconds on container " + r.getContainerId() );
@@ -158,38 +158,17 @@ public class enhancement {
 	
 	private static void run(int numOfRequests){
 		printBreak();
-		completedRequests = new ArrayList<Request>();
-		ArrayList<Container> p1 = new ArrayList<Container>();
-		ArrayList<Container> p2 = new ArrayList<Container>();
-		ArrayList<Container> p3 = new ArrayList<Container>();
-		
-		for (Container c: containers){
-			int i = c.getPriority();
-			if (i == 1){
-				p1.add(c);
-			}else if (i == 2){
-				p2.add(c);
-			}else {
-				p3.add(c);
-			}
-		}
-		
+	
 		boolean run = true;
-		int cnt = 0;
+		ArrayList<Request> queue = new ArrayList<Request>();
+		//ArrayList<Container> running = new ArrayList<Container>();
+		//add to list
+		queue = scheduleList();
+		completedRequests = new ArrayList<Request>();
 		do {
-			switch (cnt++ % 6) {
-			case 0:	rr(p1,p2,p3);
-			break;
-			case 1:	rr(p1,p2,p3);
-			break;
-			case 2:	rr(p2,p3,p1);
-			break;
-			case 3:	rr(p1,p2,p3);
-			break;
-			case 4:	rr(p2,p3,p1);
-			break;
-			default:rr(p3,p1,p2);
-			}
+
+			//run based off of the list
+			runContainers(queue);
 
 			run = checkRequests(numOfRequests);
 			
@@ -198,36 +177,70 @@ public class enhancement {
 		}while(run);
 	}
 	
-	private static void rr(ArrayList<Container> a, ArrayList<Container> b, ArrayList<Container> c){
-		runContainers(a);
-		runContainers(b);
-		runContainers(c);
+	private static ArrayList<Request> scheduleList() {
+		ArrayList<Request> queue = new ArrayList<Request>();
+		Container c1 = containers.get(0);
+		Container c2 = containers.get(1);
+		Container c3 = containers.get(2);
+		
+		int s1 = c1.getRequestSize();
+		int s2 = c2.getRequestSize();
+		int s3 = c3.getRequestSize();
+		
+		while (s1 + s2 + s3 != 0) {
+		
+			if (s1 > 0){
+				queue.add(c1.RemoveFirstRequest());
+				s1 = c1.getRequestSize();
+			}
+			if (s1 > 0){
+				queue.add(c1.RemoveFirstRequest());
+				s1 = c1.getRequestSize();
+			}
+			if (s2 > 0){
+				queue.add(c2.RemoveFirstRequest());
+				s2 = c2.getRequestSize();
+			}
+			if (s1 > 0){
+				queue.add(c1.RemoveFirstRequest());
+				s1 = c1.getRequestSize();
+			}
+			if (s2 > 0){
+				queue.add(c2.RemoveFirstRequest());
+				s2 = c2.getRequestSize();
+			}
+			if (s3 > 0){
+				queue.add(c3.RemoveFirstRequest());
+				s3 = c3.getRequestSize();
+			}
+			
+		}
+
+		return queue;
 	}
 	
-	private static void runContainers(ArrayList<Container> con){
-		for (Container c: con){
-			if (c.getRequestSize() > 0){
-				VM vm = c.getVm();
-				Request r = c.getRequest(0);
+	private static void runContainers(ArrayList<Request> req){
+		VM vm = VMs.get(0);
+		for (Request r: req){
+			if (vm.getBW() >= r.getBw() && r.getStatus() != Status.completed){
+				//subtract time from VM bandwidth
+				vm.subBW(r.getBw());
+				//if the request has not been started
+				if(r.getStatus() == Status.waiting){
+					r.setStartTime(time);
+					r.setStatus(Status.running);
+				}
 				
-				if (vm.getBW() >= r.getBw()){
-					//subtract time from VM bandwidth
-					vm.subBW(r.getBw());
-					//if the request has not been started
-					if(r.getStatus() == Status.waiting){
-						r.setStartTime(time);
-						r.setStatus(Status.running);
-					}
-					
-					if(r.getTime() == 0 && r.getStatus() != Status.completed){
-						r.setFinishTime(time);
-						completedRequests.add( c.RemoveFirstRequest() );
-						r.setStatus(Status.completed);
-					}else{
-						r.subTime(1);	
-					}
-				}			
-			}
+				if(r.getTime() == 0 && r.getStatus() != Status.completed){
+					r.setFinishTime(time);
+					completedRequests.add( r );
+					//req.remove(r);
+					r.setStatus(Status.completed);
+				}else{
+					r.subTime(1);	
+				}
+			}			
+			
 		}
 	}
 	
